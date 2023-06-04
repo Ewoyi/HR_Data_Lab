@@ -1,148 +1,178 @@
+-- Data analysis of the HR dataset
+CREATE TABLE hr_data_lab (
+    id INT NOT NULL PRIMARY KEY,
+    satisfaction_level FLOAT NULL,
+    last_evaluation FLOAT NULL,
+    number_project INT NULL,
+    average_monthly_hours INT NULL,
+    time_spend_company INT NULL,
+    Work_accident INT NULL,
+    `left` INT NULL,
+    promotion_last_5years INT NULL,
+    sales TEXT NULL,
+    salary TEXT NULL
+);
+-- inputing the dataset into the table
+LOAD DATA INFILE 'hr_data.csv' INTO TABLE hr_data_lab;
+
 -- What drives high performers to leave the company
+-- Who is a high performer or regular employee
 SELECT 
-	`hr data lab`.`MyUnknownColumn` as id,
-    `hr data lab`.`satisfaction_level`,
-    `hr data lab`.`last_evaluation`,
-    `hr data lab`.`number_project`,
-    `hr data lab`.`average_montly_hours`,
-    `hr data lab`.`time_spend_company`,
-    `hr data lab`.`Work_accident`,
-    `hr data lab`.`left`,
-    `hr data lab`.`promotion_last_5years`,
-    `hr data lab`.`sales`,
-    `hr data lab`.`salary`,
-    case when last_evaluation > 0.716
-		and number_project > 4
-        and time_spend_company >= 4
-        then 'high_perf' else 'regular' end as employee
-FROM `hr_database`.`hr data lab`;
+	hr_data_lab.`MyUnknownColumn` AS id,
+    hr_data_lab.`satisfaction_level`,
+    hr_data_lab.`last_evaluation`,
+    hr_data_lab.`number_project`,
+    hr_data_lab.`average_montly_hours`,
+    hr_data_lab.`time_spend_company`,
+    hr_data_lab.`Work_accident`,
+    hr_data_lab.`left`,
+    hr_data_lab.`promotion_last_5years`,
+    hr_data_lab.`sales`,
+    hr_data_lab.`salary`,
+    CASE WHEN last_evaluation > 0.716
+		AND number_project > 4
+        AND time_spend_company >= 4
+        THEN 'high_perf' 
+        ELSE 'regular' 
+    END AS employee
+FROM `hr_database`.hr_data_lab;
 
-
+-- From the temporary table
 with Temp as
 (SELECT 
-	`hr data lab`.`MyUnknownColumn` as id,
-    `hr data lab`.`satisfaction_level`,
-    `hr data lab`.`last_evaluation`,
-    `hr data lab`.`number_project`,
-    `hr data lab`.`average_montly_hours`,
-    `hr data lab`.`time_spend_company`,
-    `hr data lab`.`Work_accident`,
-    `hr data lab`.`left`,
-    `hr data lab`.`promotion_last_5years`,
-    `hr data lab`.`sales`,
-    `hr data lab`.`salary`,
-    case when last_evaluation > 0.716
-		and number_project > 4
-        and time_spend_company >= 4
-        then 'high_perf' else 'regular' end as employee
-FROM `hr_database`.`hr data lab`
+	hr_data_lab.`MyUnknownColumn` AS id,
+    hr_data_lab.`satisfaction_level`,
+    hr_data_lab.`last_evaluation`,
+    hr_data_lab.`number_project`,
+    hr_data_lab.`average_montly_hours`,
+    hr_data_lab.`time_spend_company`,
+    hr_data_lab.`Work_accident`,
+    hr_data_lab.`left`,
+    hr_data_lab.`promotion_last_5years`,
+    hr_data_lab.`sales`,
+    hr_data_lab.`salary`,
+    CASE WHEN last_evaluation > 0.716
+		AND number_project > 4
+        AND time_spend_company >= 4
+        THEN 'high_perf' 
+        ELSE 'regular' 
+        END AS employee
+FROM `hr_database`.hr_data_lab
 	)
-/*
-select
-	sales as department,
-    count(*) as employee_count
-from temp
-	where employee = 'high_perf'
-    and `left` = 1
-    and salary = 'high'
-		group by sales
+-- Count of high perfromers that left the company based on their promotion status
+SELECT 
+    promotion_last_5years,
+    COUNT(*) AS employee_count
+FROM temp
+    WHERE employee = 'high_perf'
+    AND `left` = 1
+        GROUP BY promotion_last_5years
 ;
-*/
-/*
-select
-	sales as department,
-    count(*) as employee_count
-from temp
-	where employee = 'high_perf'
-    and `left` = 1
-    and salary = 'medium'
-		group by sales
+-- Count of high performers that left the company with high salary
+SELECT
+	sales AS department,
+    COUNT(*) AS employee_count
+FROM temp
+	WHERE employee = 'high_perf'
+    AND `left` = 1
+    AND salary = 'high'
+		GROUP BY sales
 ;
-*/
-/*
-select
-	sales as department,
-    count(*) as employee_count
-from temp
-	where employee = 'high_perf'
-    and `left` = 1
-    and salary = 'low'
-		group by sales
+
+-- Count of high performers that left the company with medium salary
+SELECT
+	sales AS department,
+    COUNT(*) AS employee_count
+FROM temp
+	WHERE employee = 'high_perf'
+    AND `left` = 1
+    AND salary = 'medium'
+		GROUP BY sales
 ;
-*/
-/*
-select
+
+-- Count of high performers that left the company with low salary
+SELECT
+	sales AS department,
+    COUNT(*) AS employee_count
+FROM temp
+	WHERE employee = 'high_perf'
+    AND `left` = 1
+    AND salary = 'low'
+		GROUP BY sales
+;
+
+-- Count of high performers that either left of stayed at the company 
+SELECT
 	`left`,
-    count(*) as employee_count
-from temp
-	where employee = 'high_perf'
-group by `left`
+    COUNT(*) AS employee_count
+FROM temp
+	WHERE employee = 'high_perf'
+        GROUP BY `left`
 ;
-*/
-/*
-select
+
+-- Count of high performers that left the company based on salary level
+SELECT
 	salary,
-    count(*) as employee_count
-from temp
-	where employee = 'high_perf'
-    and `left` = 1
-group by salary
-order by employee_count
+    COUNT(*) AS employee_count
+FROM temp
+	WHERE employee = 'high_perf'
+    AND `left` = 1
+        GROUP BY salary
+        ORDER BY employee_count DESC
 ;
-*/
-/*
-select
-    sales as department,
-    avg(satisfaction_level) as avg_satisfaction,
-    count(*) as employee_count
-from temp
-	where employee = 'high_perf'
-    and `left` = 1
-group by 1
-order by employee_count desc
+
+-- Count of high performers that left the company with high salary
+SELECT
+    sales AS department,
+    AVG(satisfaction_level) AS AVG_satisfaction,
+    COUNT(*) AS employee_count
+FROM temp
+	WHERE employee = 'high_perf'
+    AND `left` = 1
+        GROUP BY 1
+        ORDER BY employee_count DESC
 ;
-*/
-/*
-select
+
+
+SELECT
 	employee,
     salary,
-    sales as department,
-    avg(satisfaction_level) as satisfaction_level,
-    avg(average_montly_hours) as monthly_hrs,
-    sum(Work_accident) as Work_accident,
-    sum(`left`) as left_company,
-    count(*) as total_employees
-from temp
-	group by 
+    sales AS department,
+    AVG(satisfaction_level) AS satisfaction_level,
+    AVG(average_montly_hours) AS monthly_hrs,
+    SUM(Work_accident) AS Work_accident,
+    SUM(`left`) AS left_company,
+    COUNT(*) AS total_employees
+FROM temp
+	GROUP BY 
 		employee,
 		salary,
         sales
 ;
-*/
-/*
-select
+
+
+SELECT
 	employee,
     salary,
-    sales as department,
+    sales AS department,
     Work_accident,
     `left`,
-    avg(satisfaction_level) as satisfaction_level,
-    avg(average_montly_hours) as monthly_hrs,
-    count(*) as employees
-from temp
-	group by 
+    AVG(satisfaction_level) AS satisfaction_level,
+    AVG(average_montly_hours) AS monthly_hrs,
+    COUNT(*) AS employees
+FROM temp
+	GROUP BY 
 		employee,
 		salary,
         sales,
         Work_accident,
         `left`
 ;
-*/
-/*
-select
+
+-- Count of both regular and high performing employees at the company
+SELECT
 	employee,
-    count(*)
-from Temp
-	group by employee
+    COUNT(*)
+FROM Temp
+	GROUP BY employee
 ;
-*/
